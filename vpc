@@ -1,0 +1,131 @@
+#!/bin/bash
+
+1) #Create VPC
+
+aws ec2 create-vpc \
+    --cidr-block 10.0.0.0/16 \
+
+2)#Create Subnets (3 Public, 3 Private)
+
+#public subnets
+
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.1.0/24 \
+    --availability-zone ap-south-1a \
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.2.0/24 \
+    --availability-zone ap-south-1b \
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.3.0/24 \
+    --availability-zone ap-south-1c \
+
+#private subnets
+
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.4.0/24 \
+    --availability-zone ap-south-1a \
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.5.0/24 \
+    --availability-zone ap-south-1b \
+aws ec2 create-subnet \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+    --cidr-block 10.0.6.0/24 \
+    --availability-zone ap-south-1c \
+
+3)#Create Route Tables (Public and Private)
+#public-route-table
+aws ec2 create-route-table \
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+
+#private-route-table
+aws ec2 create-route-table \ 
+    --vpc-id vpc-0e911ba8bb79fd4ec \
+
+
+#4. Create an Internet Gateway (IGW)
+
+aws ec2 create-internet-gateway
+
+#5. Attach IGW to VPC
+
+aws ec2 attach-internet-gateway \ 
+     --vpc-id vpc-0e911ba8bb79fd4ec \
+     --internet-gateway-id igw-0b35bb42d64bcc5bf \
+
+#6. Add Route to Public Route Table (via IGW)
+
+aws ec2 create-route \
+     --route-table-id rtb-0073c4031ecaa7446 \
+     --destination-cidr-block 0.0.0.0/0 \
+     --gateway-id igw-0b35bb42d64bcc5bf \
+
+#7. Associate Public Subnets with Public Route Table
+
+aws ec2 associate-route-table \
+     --subnet-id subnet-09de0b82b699d42d8 \
+     --route-table-id rtb-0073c4031ecaa7446 \
+aws ec2 associate-route-table \
+    --subnet-id subnet-09858acb5aa9c1b46 \ 
+    --route-table-id rtb-0073c4031ecaa7446 \
+aws ec2 associate-route-table \
+    --subnet-id subnet-0f763e153fd65c49e \
+    --route-table-id rtb-0073c4031ecaa7446 \
+
+#8. Create NAT Gateway (NGW) with Elastic IP
+
+aws ec2 allocate-address
+
+aws ec2 create-nat-gateway \
+     --subnet-id subnet-09de0b82b699d42d8 \ 
+     --allocation-id eipalloc-03ba73b00468989c3 \
+
+#9. Add Route to Private Route Table (via NGW)
+
+aws ec2 create-route \ 
+    --route-table-id rtb-04530d439c70685a3 \
+    --destination-cidr-block 0.0.0.0/0 \
+    --nat-gateway-id nat-06c87eb7d188ee630 \
+
+#10. Associate Private Subnets with Private Route Table
+
+
+aws ec2 associate-route-table \
+    --subnet-id subnet-098291b820734ad2a \ 
+    --route-table-id rtb-04530d439c70685a3 \
+aws ec2 associate-route-table \
+    --subnet-id subnet-0cd3f61ca3c30d0d7 \ 
+    --route-table-id rtb-04530d439c70685a3 \
+aws ec2 associate-route-table \
+    --subnet-id subnet-050e2f18493c1523b \
+    --route-table-id rtb-04530d439c70685a3 \
+
+#11. Launch an EC2 Instance in Public Subnet
+
+aws ec2 run-instances \ 
+     --image-id ami-02b49a24cfb95941c \ 
+     --count 1 \
+     --instance-type t2.micro \ 
+     --key-name nani \
+     --subnet-id subnet-09de0b82b699d42d8 \ 
+     --associate-public-ip-address \
+
+#12. Launch an EC2 Instance in Private Subnet
+
+aws ec2 run-instances \ 
+    --image-id ami-02b49a24cfb95941c \
+    --count 1 \
+    --instance-type t2.micro \
+    --key-name nani \
+    --subnet-id subnet-098291b820734ad2a \ 
+    --no-associate-public-ip-address \
+
+#13. Connect to EC2 Instance in Public Subnet
+
+ssh -i nani.pem ec2-user@13.235.99.126
+
+
