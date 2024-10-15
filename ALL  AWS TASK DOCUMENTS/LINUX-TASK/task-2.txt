@@ -1,0 +1,89 @@
+Reset Root Password using single user mode
+++++++++++++++++++++++++++++++++++++++++++++++
+
+1)reboot
+2)linux16 line-at the end-type-->rd.break console=tty1 and press (ctrl+x)
+3)mount | grep /sysroot(to find the root mount point)
+4)Mount -0 remount,rw /sysroot(cmd to modify the read-only to read and write)
+5)mount | grep /sysroot(check wheather it is in read-write mode or not)
+6)chroot /sysroot(to execute the password cmd first we have to verify the shell version present or not and after we have to enter
+                       the password cmd)
+
+7)passwd root(to enter a new root password)
+8)touch /.autorelabel(to verify the Linux policies
+                           &
+                        inside the root how many mountpoints are there it should re-label)
+9)exit (logout)
+
+script1:Modify the script to take inputs such as the starting number and ending number, 
+            ensuring the operation is performed within this range
+
+#!/bin/bash
+# read the user input as starting number
+read -p "Enter the starting number: " start
+
+# read the user input as ending number
+read -p "Enter the ending number: " end
+
+if [ $start -le $end ]; then(Checks if the starting number is less than or equal to the ending number.)
+
+    -le--->less than or equal to
+
+    echo "Numbers from $start to $end:"
+    for (( i=$start; i<=$end; i++ ))(ranges from the starting number to the ending number.)
+    do
+        echo $i(Prints each number in the range from starting to ending)
+    done
+else
+    echo "Error: Starting number must be less than or equal to the ending number."
+fi
+
+fi --->ends the if block
+
+script3:If memory usage exceeds 95%, the script should create a 5GB empty file, activate swap on it, and add it to the memory. 
+                 Each step should be validated, including the final command using echo $?.
+
+#!/bin/bash
+
+
+MEMORY_THRESHOLD=95
+
+
+MEMORY_USAGE=$(free | grep Mem | awk '{print $3/$2 * 100.0}')  (free-->is used to filtered and calculated to get the memory usage as a                           
+
+                                                                                  percentage)
+
+
+MEMORY_USAGE=${MEMORY_USAGE%.*} (The percentage is converted to an integer for easy comparison)
+
+
+if [ $MEMORY_USAGE -gt $MEMORY_THRESHOLD ]; then  (-gt-->comparision operator)
+    echo "Memory usage is $MEMORY_USAGE%, which exceeds the threshold of $MEMORY_THRESHOLD%."
+
+    
+    SWAP_FILE="/swapfile"
+    sudo fallocate -l 5G $SWAP_FILE (Creates a 5GB swap file named) (-l-->Specifies the size of the file to create)
+                     (fallocate-->this command works on file systems that support the  ext4, XFS) 
+
+    echo "Creating swap file: $(echo $?)"
+    
+    
+    sudo chmod 600 $SWAP_FILE (Sets the correct permissions to the swap file)
+    echo "Setting permissions on swap file: $(echo $?)"
+    
+    
+    sudo mkswap $SWAP_FILE (It set up the file as a swap area)
+    echo "Making the file a swap area: $(echo $?)"
+    
+    
+    sudo swapon $SWAP_FILE (Activates the swap file.)
+    echo "Enabling the swap file: $(echo $?)"
+
+    
+    sudo swapon --show (Check if swap is active)
+    echo "Swap file activated and added successfully: $(echo $?)" (echo $? is used to print the exit status of the previous command.)
+else
+    echo "Memory usage is $MEMORY_USAGE%, which is below the threshold of $MEMORY_THRESHOLD%. No swap file will be created."
+fi
+
+

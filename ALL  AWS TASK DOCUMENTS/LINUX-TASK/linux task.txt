@@ -1,0 +1,87 @@
+1)Create Physical Volume of 20GB.
++++++++++++++++++++++++++++++++++++++++
+cmd-->pvcreate /dev/sdb1
+
+Identify the disk or partition.
+Create a 20GB partition using fdisk or another partitioning tool.
+Initialize the partition as a Physical Volume with pvcreate.
+Verify the PV with pvs or pvdisplay.
+
+
+2)Create Volume Group of 10GB
+++++++++++++++++++++++++++++++++++++++
+
+Create the VG using vgcreate.(cmd-->vgcreate Pradeep /dev/sdb1)
+cmd-->lvcreate -n nani -L +10G Pradeep
+
+Verify the VG with vgs or vgdisplay.
+
+
+3)Create Logical volume-1 with 2.5GB, apply the filesystem. Mount the file system with /lvm1 mount path
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+cmds
+lvcreate -n nani_1 -L +2.5G pradeep
+mkfs.ext4 /dev/pradeep/nani_1
+mkdir /lvm
+mount /dev/pradeep/nani_1 /lvm
+df -h
+
+4)Create another logical volume-2 with 2.5GB, apply the filesystem. Mount the filesystem with /lvm2 mount path
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+cmds
+
+lvcreate -n nani_2 -L +2.5G pradeep
+mkfs.ext4 /dev/pradeep/nani_2
+mkdir /lvm1
+mount /dev/pradeep/nani_2 /lvm1
+df -h
+
+5)Increase the logical volume-1 by 2GB.
++++++++++++++++++++++++++++++++++++++++++
+
+cmd
+
+lvextend -L +2G /dev/pradeep/nani_1(Extend the LV by 2GB)
+
+6)Decrease the logical volume-2 by 2GB.
++++++++++++++++++++++++++++++++++++++++++
+cmd
+
+lvreduce -L -2G /dev/pradeep/nani_2(Reduce the LV by 2GB)
+
+
+7)Restart the server and observe mounts are exist.
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+cmd
+
+reboot(Restart the server)
+df -h /lvm
+df -h /lvm1(Verify mounts after reboot)
+
+
+8)Find the solution to find for permanent mounts. Even after restart also we need mounts to be exist.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+cmd
+
+Find the UUID of the device using blkid.(blkid /dev/Pradeep/nani_1)
+
+UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /lvm ext4 defaults 0 0
+
+Edit /etc/fstab to include the device, mount point, and filesystem type.
+Test the configuration using (mount -a)
+ Restart the Server
+Verify the Mounts After Reboot(df -h)
+
+9).Create 2GB empty file. Apply for swap filesystem. check swap is active or not.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+cmd
+
+dd if=/dev/zero of=/swapfile bs=1M count=2048(Create a 2GB file)
+chmod 600 /swapfile(Set proper permissions to file)
+ mkswap /swapfile(Apply swap filesystem)
+swapon /swapfile(Enable the swap file)
+swapon --show(Check if swap is active)
+
