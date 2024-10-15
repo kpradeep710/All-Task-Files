@@ -72,6 +72,7 @@ echo "EC2 Instance Launched in Public Subnet with ID: $PUBLIC_INSTANCE_ID"
 # Launch EC2 Instance in Private Subnet
 PRIVATE_INSTANCE_ID=$(aws ec2 run-instances --image-id $AMI_ID --instance-type $INSTANCE_TYPE --key-name $KEY_NAME --subnet-id ${PRIVATE_SUBNET_ID[0]} --query 'Instances[0].InstanceId' --output text)
 echo "EC2 Instance Launched in Private Subnet with ID: $PRIVATE_INSTANCE_ID"
+<<<<<<< HEAD
 
 # Wait for both instances to be running
 aws ec2 wait instance-running --instance-ids $PUBLIC_INSTANCE_ID $PRIVATE_INSTANCE_ID
@@ -79,4 +80,12 @@ aws ec2 wait instance-running --instance-ids $PUBLIC_INSTANCE_ID $PRIVATE_INSTAN
 # Stop both instances
 aws ec2 stop-instances --instance-ids $PUBLIC_INSTANCE_ID $PRIVATE_INSTANCE_ID
 echo "Stopped both EC2 Instances"
+=======
 
+# Wait for both instances to be running
+aws ec2 wait instance-running --instance-ids $PUBLIC_INSTANCE_ID $PRIVATE_INSTANCE_ID
+>>>>>>> 5ba8853bcd148bd45dabbfe4cca981d5ca1f409e
+
+# Stop both instances
+aws ec2 stop-instances --instance-ids $PUBLIC_INSTANCE_ID $PRIVATE_INSTANCE_ID
+echo "Stopped both EC2 Instances"
